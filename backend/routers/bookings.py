@@ -2,26 +2,47 @@ import os
 import uuid
 
 import qrcode
+<<<<<<< HEAD
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+=======
 from fastapi import APIRouter, Depends, HTTPException, status
+>>>>>>> origin/main
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from database import get_db
+<<<<<<< HEAD
+from models import Booking, Event, User, Notification, Ticket, Coupon
+from schemas import BookingCreate, BookingResponse
+from datetime import datetime
+from security import bearer_scheme, get_current_user_id
+from sqlalchemy import update
+from routers.phase4 import manager
+
+
+async def broadcast_availability(event_id: int, available_tickets: int):
+    await manager.broadcast(event_id, {"event_id": event_id, "available_tickets": available_tickets, "sold_out": available_tickets <= 0})
+
+=======
 from models import Booking, Event, User, Notification, Ticket
 from schemas import BookingCreate, BookingResponse
 from security import bearer_scheme, get_current_user_id
 
 
+>>>>>>> origin/main
 router = APIRouter(
     prefix="/api/v1/bookings",
     tags=["Bookings"]
 )
 
 
+<<<<<<< HEAD
+=======
 # =========================
 # CREATE BOOKING
 # =========================
 
+>>>>>>> origin/main
 @router.post(
     "",
     response_model=BookingResponse,
@@ -29,16 +50,24 @@ router = APIRouter(
 )
 def create_booking(
     booking_data: BookingCreate,
+<<<<<<< HEAD
+    background_tasks: BackgroundTasks,
+=======
+>>>>>>> origin/main
     credentials: HTTPAuthorizationCredentials = Depends(
         bearer_scheme
     ),
     db: Session = Depends(get_db)
 ):
+<<<<<<< HEAD
+    user_id = get_current_user_id(credentials)
+=======
     # Get logged-in user
     user_id = get_current_user_id(
         credentials=credentials,
         db=db
     )
+>>>>>>> origin/main
 
     # Check user
     user = db.query(User).filter(
@@ -62,6 +91,45 @@ def create_booking(
             detail="Event not found"
         )
 
+<<<<<<< HEAD
+    # Atomically reserve tickets to prevent two concurrent requests overselling.
+    reservation = db.query(Event).filter(
+        Event.id == event.id,
+        Event.available_tickets >= booking_data.ticket_quantity
+    ).update(
+        {Event.available_tickets: Event.available_tickets - booking_data.ticket_quantity},
+        synchronize_session=False
+    )
+    if reservation != 1:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Not enough tickets available"
+        )
+    db.refresh(event)
+
+    # Calculate total and validate an optional coupon.
+    total_price = event.ticket_price * booking_data.ticket_quantity
+    coupon = None
+    discount_amount = 0.0
+    if booking_data.coupon_code:
+        coupon = db.query(Coupon).filter(
+            Coupon.coupon_code == booking_data.coupon_code.strip().upper()
+        ).first()
+        if not coupon or not coupon.is_active:
+            raise HTTPException(status_code=400, detail="Invalid or inactive coupon")
+        if coupon.expiry_date < datetime.utcnow():
+            raise HTTPException(status_code=400, detail="Coupon has expired")
+        if coupon.usage_count >= coupon.usage_limit:
+            raise HTTPException(status_code=400, detail="Coupon usage limit reached")
+        if total_price < coupon.minimum_booking_amount:
+            raise HTTPException(status_code=400, detail=f"Minimum booking amount is ₹{coupon.minimum_booking_amount:.2f}")
+        discount_amount = total_price * coupon.discount_value / 100 if coupon.discount_type == "PERCENTAGE" else coupon.discount_value
+        discount_amount = min(discount_amount, total_price)
+        coupon.usage_count += 1
+
+    # Booking remains pending until payment succeeds.
+=======
     # Check if event is cancelled
     if event.event_status == "CANCELLED":
         raise HTTPException(
@@ -90,22 +158,34 @@ def create_booking(
     )
 
     # Create booking
+>>>>>>> origin/main
     new_booking = Booking(
         user_id=user_id,
         event_id=event.id,
         ticket_quantity=booking_data.ticket_quantity,
         total_price=total_price,
+<<<<<<< HEAD
+        coupon_id=coupon.id if coupon else None,
+        discount_amount=round(discount_amount, 2),
+        final_amount=round(total_price - discount_amount, 2),
+        booking_status="PENDING"
+=======
         booking_status="CONFIRMED"
     )
 
     # Reduce available tickets
     event.available_tickets -= (
         booking_data.ticket_quantity
+>>>>>>> origin/main
     )
 
     db.add(new_booking)
 
+<<<<<<< HEAD
+    # Get booking ID before creating ticket
+=======
     # Get booking ID
+>>>>>>> origin/main
     db.flush()
 
     # =========================
@@ -159,7 +239,11 @@ def create_booking(
 
     notification = Notification(
         user_id=user_id,
+<<<<<<< HEAD
+        title="Booking Created",
+=======
         title="Booking Confirmed",
+>>>>>>> origin/main
         message=(
             f"Your booking for '{event.title}' "
             f"has been confirmed. "
@@ -173,6 +257,13 @@ def create_booking(
 
     db.add(notification)
 
+<<<<<<< HEAD
+    # Save everything
+    db.commit()
+
+    db.refresh(new_booking)
+    background_tasks.add_task(broadcast_availability, event.id, event.available_tickets)
+=======
     # =========================
     # SAVE EVERYTHING
     # =========================
@@ -180,14 +271,18 @@ def create_booking(
     db.commit()
 
     db.refresh(new_booking)
+>>>>>>> origin/main
 
     return new_booking
 
 
+<<<<<<< HEAD
+=======
 # =========================
 # GET MY BOOKINGS
 # =========================
 
+>>>>>>> origin/main
 @router.get(
     "/my-bookings",
     response_model=list[BookingResponse]
@@ -198,10 +293,14 @@ def get_my_bookings(
     ),
     db: Session = Depends(get_db)
 ):
+<<<<<<< HEAD
+    user_id = get_current_user_id(credentials)
+=======
     user_id = get_current_user_id(
         credentials=credentials,
         db=db
     )
+>>>>>>> origin/main
 
     bookings = (
         db.query(Booking)
@@ -217,10 +316,13 @@ def get_my_bookings(
     return bookings
 
 
+<<<<<<< HEAD
+=======
 # =========================
 # GET SINGLE BOOKING
 # =========================
 
+>>>>>>> origin/main
 @router.get(
     "/{booking_id}",
     response_model=BookingResponse
@@ -232,10 +334,14 @@ def get_booking(
     ),
     db: Session = Depends(get_db)
 ):
+<<<<<<< HEAD
+    user_id = get_current_user_id(credentials)
+=======
     user_id = get_current_user_id(
         credentials=credentials,
         db=db
     )
+>>>>>>> origin/main
 
     booking = (
         db.query(Booking)
@@ -251,7 +357,10 @@ def get_booking(
             detail="Booking not found"
         )
 
+<<<<<<< HEAD
+=======
     # Check ownership
+>>>>>>> origin/main
     if booking.user_id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -264,10 +373,13 @@ def get_booking(
     return booking
 
 
+<<<<<<< HEAD
+=======
 # =========================
 # CANCEL BOOKING
 # =========================
 
+>>>>>>> origin/main
 @router.patch(
     "/{booking_id}/cancel",
     response_model=BookingResponse
@@ -279,10 +391,14 @@ def cancel_booking(
     ),
     db: Session = Depends(get_db)
 ):
+<<<<<<< HEAD
+    user_id = get_current_user_id(credentials)
+=======
     user_id = get_current_user_id(
         credentials=credentials,
         db=db
     )
+>>>>>>> origin/main
 
     booking = (
         db.query(Booking)
@@ -315,6 +431,11 @@ def cancel_booking(
             detail="Booking is already cancelled"
         )
 
+<<<<<<< HEAD
+    # Pending and confirmed bookings can be cancelled.
+    if booking.booking_status not in ("CONFIRMED", "PENDING"):
+        raise HTTPException(status_code=400, detail="This booking cannot be cancelled")
+=======
     # Only confirmed bookings can be cancelled
     if booking.booking_status != "CONFIRMED":
         raise HTTPException(
@@ -324,6 +445,7 @@ def cancel_booking(
                 "can be cancelled"
             )
         )
+>>>>>>> origin/main
 
     # Restore event tickets
     event = (

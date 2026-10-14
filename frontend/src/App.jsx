@@ -17,9 +17,13 @@ import EventDetails from "./pages/EventDetails";
 import Booking from "./pages/Booking";
 import BookingHistory from "./pages/BookingHistory";
 import BookingConfirmation from "./pages/BookingConfirmation";
+import PaymentCheckout from "./pages/PaymentCheckout";
 import Tickets from "./pages/Tickets";
 import Notifications from "./pages/Notifications";
 import TicketVerification from "./pages/TicketVerification";
+import Wishlist from "./pages/Wishlist";
+import Profile from "./pages/Profile";
+import ChatWidget from "./components/ChatWidget";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -123,6 +127,8 @@ function App() {
             }
           />
 
+          <Route path="/payment-checkout" element={<ProtectedRoute><PaymentCheckout /></ProtectedRoute>} />
+
           <Route
             path="/booking-confirmation"
             element={
@@ -161,15 +167,13 @@ function App() {
 
           <Route
             path="/ticket-verification"
-            element={
-              <ProtectedRoute>
-                <TicketVerification />
-              </ProtectedRoute>
-            }
+            element={<ProtectedRoute><TicketVerification /></ProtectedRoute>}
           />
+          <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
         </Routes>
-
+        <ChatWidget />
       </div>
     </BrowserRouter>
   );

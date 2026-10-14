@@ -1,3 +1,39 @@
+<<<<<<< HEAD
+from datetime import datetime
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+from database import get_db
+from models import Event, Booking
+from schemas import EventCreate, EventResponse
+router = APIRouter(prefix="/api/v1/events", tags=["Events"])
+
+@router.post("", response_model=EventResponse, status_code=201)
+def create_event(event_data: EventCreate, db: Session = Depends(get_db)):
+    event = Event(title=event_data.title, description=event_data.description, category=event_data.category, location=event_data.location, event_date=event_data.event_date, ticket_price=event_data.ticket_price, banner_image=event_data.banner_image, total_tickets=event_data.total_tickets, available_tickets=event_data.total_tickets)
+    db.add(event); db.commit(); db.refresh(event); return event
+
+@router.get("", response_model=list[EventResponse])
+def get_events(category: str | None = Query(default=None), search: str | None = Query(default=None), location: str | None = Query(default=None), start_date: datetime | None = Query(default=None), end_date: datetime | None = Query(default=None), min_price: float | None = Query(default=None, ge=0), max_price: float | None = Query(default=None, ge=0), sort_by: str = Query(default="date", pattern="^(date|price|popularity)$"), db: Session = Depends(get_db)):
+    query = db.query(Event)
+    if category: query = query.filter(Event.category == category)
+    if search: query = query.filter(Event.title.ilike(f"%{search}%"))
+    if location: query = query.filter(Event.location.ilike(f"%{location}%"))
+    if start_date: query = query.filter(Event.event_date >= start_date)
+    if end_date: query = query.filter(Event.event_date <= end_date)
+    if min_price is not None: query = query.filter(Event.ticket_price >= min_price)
+    if max_price is not None: query = query.filter(Event.ticket_price <= max_price)
+    if sort_by == "price": query = query.order_by(Event.ticket_price.asc())
+    elif sort_by == "popularity": query = query.outerjoin(Booking, (Booking.event_id == Event.id) & (Booking.booking_status == "CONFIRMED")).group_by(Event.id).order_by(func.count(Booking.id).desc(), Event.event_date.asc())
+    else: query = query.order_by(Event.event_date.asc())
+    return query.all()
+
+@router.get("/{event_id}", response_model=EventResponse)
+def get_event(event_id: int, db: Session = Depends(get_db)):
+    event = db.query(Event).filter(Event.id == event_id).first()
+    if not event: raise HTTPException(status_code=404, detail="Event not found")
+    return event
+=======
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -297,3 +333,4 @@ def get_event_bookings(
 
     return bookings
 
+>>>>>>> origin/main

@@ -21,8 +21,7 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     id: int
     username: str
-    email: str
-    role: str
+    email: EmailStr
     created_at: datetime
 
     class Config:
@@ -54,67 +53,12 @@ class Token(BaseModel):
 class EventCreate(BaseModel):
     title: str = Field(min_length=2, max_length=200)
     description: str = Field(min_length=5)
-
-    category: Literal[
-        "Music",
-        "Tech",
-        "Sports",
-        "Business"
-    ]
-
+    category: Literal["Music", "Tech", "Sports", "Business"]
     location: str = Field(min_length=2, max_length=200)
-
     event_date: datetime
-
     ticket_price: float = Field(gt=0)
-
     banner_image: str | None = None
-
     total_tickets: int = Field(gt=0)
-
-
-# =========================
-# EVENT UPDATE
-# =========================
-
-class EventUpdate(BaseModel):
-    title: str | None = Field(
-        default=None,
-        min_length=2,
-        max_length=200
-    )
-
-    description: str | None = Field(
-        default=None,
-        min_length=5
-    )
-
-    category: Literal[
-        "Music",
-        "Tech",
-        "Sports",
-        "Business"
-    ] | None = None
-
-    location: str | None = Field(
-        default=None,
-        min_length=2,
-        max_length=200
-    )
-
-    event_date: datetime | None = None
-
-    ticket_price: float | None = Field(
-        default=None,
-        gt=0
-    )
-
-    banner_image: str | None = None
-
-    total_tickets: int | None = Field(
-        default=None,
-        gt=0
-    )
 
 
 # =========================
@@ -132,8 +76,6 @@ class EventResponse(BaseModel):
     banner_image: str | None
     total_tickets: int
     available_tickets: int
-    organizer_id: int | None
-    event_status: str
     created_at: datetime
 
     class Config:
@@ -146,7 +88,8 @@ class EventResponse(BaseModel):
 
 class BookingCreate(BaseModel):
     event_id: int
-    ticket_quantity: int = Field(gt=0)
+    ticket_quantity: int = Field(gt=0, le=10)
+    coupon_code: str | None = None
 
 
 # =========================
@@ -159,6 +102,9 @@ class BookingResponse(BaseModel):
     event_id: int
     ticket_quantity: int
     total_price: float
+    coupon_id: int | None = None
+    discount_amount: float = 0
+    final_amount: float = 0
     booking_status: str
     created_at: datetime
 
@@ -194,5 +140,68 @@ class NotificationResponse(BaseModel):
     is_read: bool
     created_at: datetime
 
+    class Config:
+        from_attributes = True
+
+class PaymentCreate(BaseModel):
+    booking_id: int
+    payment_method: Literal["CARD", "UPI", "NET_BANKING", "SIMULATED"] = "SIMULATED"
+    # Only for local demo testing; use real gateway verification in production.
+    simulated_result: Literal["SUCCESS", "FAILED"] = "SUCCESS"
+
+class PaymentResponse(BaseModel):
+    id: int
+    booking_id: int
+    payment_method: str
+    payment_status: str
+    transaction_id: str | None
+    amount: float
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class CouponCreate(BaseModel):
+    coupon_code: str = Field(min_length=3, max_length=50)
+    discount_type: Literal["PERCENTAGE", "FIXED"]
+    discount_value: float = Field(gt=0)
+    minimum_booking_amount: float = Field(default=0, ge=0)
+    expiry_date: datetime
+    usage_limit: int = Field(gt=0)
+    is_active: bool = True
+
+class CouponValidate(BaseModel):
+    coupon_code: str
+    booking_amount: float = Field(gt=0)
+
+class CouponResponse(BaseModel):
+    id: int
+    coupon_code: str
+    discount_type: str
+    discount_value: float
+    minimum_booking_amount: float
+    expiry_date: datetime
+    usage_limit: int
+    usage_count: int
+    is_active: bool
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class ReviewCreate(BaseModel):
+    event_id: int
+    rating: int = Field(ge=1, le=5)
+    review_text: str = Field(default="", max_length=2000)
+
+class ReviewUpdate(BaseModel):
+    rating: int = Field(ge=1, le=5)
+    review_text: str = Field(default="", max_length=2000)
+
+class ReviewResponse(BaseModel):
+    id: int
+    user_id: int
+    event_id: int
+    rating: int
+    review_text: str
+    created_at: datetime
     class Config:
         from_attributes = True

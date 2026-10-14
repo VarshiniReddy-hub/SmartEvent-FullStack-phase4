@@ -223,13 +223,7 @@ function NotificationDropdown({
 
                       <div className="dropdown-notification-icon">
 
-                        {notification.type ===
-                        "BOOKING"
-                          ? "🎟️"
-                          : notification.type ===
-                            "EVENT"
-                          ? "📅"
-                          : "🔔"}
+                        {notification.type === "BOOKING" ? "🎟️" : notification.type === "EVENT" ? "📅" : notification.type === "PAYMENT" ? "💳" : "🔔"}
 
                       </div>
 

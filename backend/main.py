@@ -15,10 +15,40 @@ from routers.events import router as events_router
 from routers.bookings import router as bookings_router
 from routers.tickets import router as tickets_router
 from routers.notifications import router as notifications_router
+<<<<<<< HEAD
+from routers.payments import router as payments_router
+from routers.coupons import router as coupons_router
+from routers.reviews import router as reviews_router
+from routers.phase4 import router as phase4_router
+
+
+Base.metadata.create_all(bind=engine)
+
+# Lightweight SQLite migration for existing SmartEvent databases.
+from sqlalchemy import inspect, text
+with engine.begin() as connection:
+    user_columns = {column["name"] for column in inspect(engine).get_columns("users")}
+    if "location" not in user_columns:
+        connection.execute(text("ALTER TABLE users ADD COLUMN location VARCHAR(200)"))
+    if "profile_picture" not in user_columns:
+        connection.execute(text("ALTER TABLE users ADD COLUMN profile_picture VARCHAR(500)"))
+    if "role" not in user_columns:
+        connection.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR(30) NOT NULL DEFAULT 'USER'"))
+    columns = {column["name"] for column in inspect(engine).get_columns("bookings")}
+    if "coupon_id" not in columns:
+        connection.execute(text("ALTER TABLE bookings ADD COLUMN coupon_id INTEGER"))
+    if "discount_amount" not in columns:
+        connection.execute(text("ALTER TABLE bookings ADD COLUMN discount_amount FLOAT NOT NULL DEFAULT 0"))
+    if "final_amount" not in columns:
+        connection.execute(text("ALTER TABLE bookings ADD COLUMN final_amount FLOAT NOT NULL DEFAULT 0"))
+    connection.execute(text("UPDATE bookings SET final_amount = total_price WHERE final_amount = 0 AND total_price > 0"))
+
+=======
 from routers.organizer import router as organizer_router
 
 Base.metadata.create_all(bind=engine)
 
+>>>>>>> origin/main
 os.makedirs(
     "static/qrcodes",
     exist_ok=True
@@ -159,7 +189,15 @@ app.include_router(events_router)
 app.include_router(bookings_router)
 app.include_router(tickets_router)
 app.include_router(notifications_router)
+<<<<<<< HEAD
+app.include_router(payments_router)
+app.include_router(coupons_router)
+app.include_router(reviews_router)
+app.include_router(phase4_router)
+
+=======
 app.include_router(organizer_router)
+>>>>>>> origin/main
 
 @app.get("/")
 def root():

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+from fastapi import APIRouter, Depends, HTTPException
+=======
 from fastapi import APIRouter, Depends, HTTPException, status
+>>>>>>> origin/main
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
@@ -14,10 +18,14 @@ router = APIRouter(
 )
 
 
+<<<<<<< HEAD
+# Get all notifications
+=======
 # =========================
 # GET MY NOTIFICATIONS
 # =========================
 
+>>>>>>> origin/main
 @router.get(
     "",
     response_model=list[NotificationResponse]
@@ -28,10 +36,14 @@ def get_my_notifications(
     ),
     db: Session = Depends(get_db)
 ):
+<<<<<<< HEAD
+    user_id = get_current_user_id(credentials)
+=======
     user_id = get_current_user_id(
         credentials=credentials,
         db=db
     )
+>>>>>>> origin/main
 
     notifications = (
         db.query(Notification)
@@ -47,10 +59,14 @@ def get_my_notifications(
     return notifications
 
 
+<<<<<<< HEAD
+# Get unread notification count
+=======
 # =========================
 # GET UNREAD COUNT
 # =========================
 
+>>>>>>> origin/main
 @router.get(
     "/unread-count"
 )
@@ -60,10 +76,14 @@ def get_unread_count(
     ),
     db: Session = Depends(get_db)
 ):
+<<<<<<< HEAD
+    user_id = get_current_user_id(credentials)
+=======
     user_id = get_current_user_id(
         credentials=credentials,
         db=db
     )
+>>>>>>> origin/main
 
     count = (
         db.query(Notification)
@@ -79,12 +99,19 @@ def get_unread_count(
     }
 
 
+<<<<<<< HEAD
+# Mark notification as read
+@router.patch(
+    "/{notification_id}/read",
+    response_model=NotificationResponse
+=======
 # =========================
 # MARK NOTIFICATION AS READ
 # =========================
 
 @router.patch(
     "/{notification_id}/read"
+>>>>>>> origin/main
 )
 def mark_notification_as_read(
     notification_id: int,
@@ -93,10 +120,14 @@ def mark_notification_as_read(
     ),
     db: Session = Depends(get_db)
 ):
+<<<<<<< HEAD
+    user_id = get_current_user_id(credentials)
+=======
     user_id = get_current_user_id(
         credentials=credentials,
         db=db
     )
+>>>>>>> origin/main
 
     notification = (
         db.query(Notification)
@@ -109,7 +140,11 @@ def mark_notification_as_read(
 
     if not notification:
         raise HTTPException(
+<<<<<<< HEAD
+            status_code=404,
+=======
             status_code=status.HTTP_404_NOT_FOUND,
+>>>>>>> origin/main
             detail="Notification not found"
         )
 
@@ -118,4 +153,15 @@ def mark_notification_as_read(
     db.commit()
     db.refresh(notification)
 
+<<<<<<< HEAD
     return notification
+
+@router.patch("/read-all")
+def mark_all_as_read(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme), db: Session = Depends(get_db)):
+    user_id = get_current_user_id(credentials)
+    db.query(Notification).filter(Notification.user_id == user_id, Notification.is_read == False).update({Notification.is_read: True})
+    db.commit()
+    return {"message": "All notifications marked as read"}
+=======
+    return notification
+>>>>>>> origin/main

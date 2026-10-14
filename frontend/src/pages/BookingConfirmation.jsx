@@ -6,6 +6,8 @@ function BookingConfirmation() {
   const location = useLocation();
 
   const booking = location.state?.booking;
+  const payment = location.state?.payment;
+  const paymentSucceeded = payment?.payment_status === "SUCCESS";
 
   if (!booking) {
     return (
@@ -39,13 +41,13 @@ function BookingConfirmation() {
       <div className="booking-confirmation-card">
 
         <div className="confirmation-icon">
-          ✓
+          {paymentSucceeded ? "✓" : "!"}
         </div>
 
-        <h2>Booking Confirmed!</h2>
+        <h2>{paymentSucceeded ? "Payment Successful!" : payment ? "Payment Failed" : "Booking Status"}</h2>
 
         <p className="confirmation-message">
-          Your event booking has been successfully confirmed.
+          {paymentSucceeded ? "Your payment is complete and your tickets are confirmed." : payment ? "Your payment did not complete. You can retry payment from your booking." : "Here are your booking details."}
         </p>
 
         <div className="confirmation-details">
@@ -65,10 +67,11 @@ function BookingConfirmation() {
             <strong>{booking.ticket_quantity}</strong>
           </div>
 
-          <div className="confirmation-row">
-            <span>Total Amount</span>
-            <strong>₹{booking.total_price}</strong>
-          </div>
+          <div className="confirmation-row"><span>Subtotal</span><strong>₹{Number(booking.total_price).toFixed(2)}</strong></div>
+          <div className="confirmation-row"><span>Discount</span><strong>−₹{Number(booking.discount_amount || 0).toFixed(2)}</strong></div>
+          <div className="confirmation-row"><span>Final Amount</span><strong>₹{Number(booking.final_amount ?? booking.total_price).toFixed(2)}</strong></div>
+          {payment && <div className="confirmation-row"><span>Payment</span><strong>{payment.payment_status}</strong></div>}
+          {payment?.transaction_id && <div className="confirmation-row"><span>Transaction ID</span><strong>{payment.transaction_id}</strong></div>}
 
           <div className="confirmation-row">
             <span>Status</span>
@@ -81,6 +84,7 @@ function BookingConfirmation() {
 
         <div className="confirmation-actions">
 
+          {!paymentSucceeded && payment && <button className="confirmation-primary-button" onClick={() => navigate(`/events/${booking.event_id}/book`)}>Try Again</button>}
           <button
             className="confirmation-primary-button"
             onClick={() => navigate("/bookings")}

@@ -1889,3 +1889,44 @@ img {
     padding: 40px 18px;
   }
 }
+
+/* Modules 12-17: checkout, reviews and responsive filters */
+.payment-page { min-height: 70vh; display: flex; justify-content: center; align-items: flex-start; padding: 48px 20px; background: #f6f8fc; }
+.payment-card { width: min(100%, 620px); background: #fff; border-radius: 18px; padding: 30px; box-shadow: 0 12px 40px rgba(20,35,70,.09); display: flex; flex-direction: column; gap: 14px; }
+.payment-card h2 { margin: 4px 0; } .payment-muted { color: #687386; font-size: .92rem; }
+.payment-summary { background: #f7f9fc; border: 1px solid #e8edf5; border-radius: 12px; padding: 18px; }
+.payment-summary h3 { margin-top: 0; } .payment-summary p { margin: 8px 0; }
+.payment-final { display:flex; justify-content:space-between; align-items:center; border-top:1px solid #dce3ee; padding-top:14px; margin-top:14px; font-size:1.1rem; }
+.payment-card label { font-weight:600; } .payment-card select, .coupon-section input { width:100%; padding:11px 12px; border:1px solid #d7deea; border-radius:9px; background:white; }
+.payment-card button { padding:12px 16px; border:0; border-radius:9px; cursor:pointer; font-weight:600; }
+.reviews-section { width:min(100% - 32px, 980px); margin:28px auto; padding:24px; background:#fff; border-radius:16px; box-shadow:0 8px 28px rgba(20,35,70,.06); }
+.review-average { color:#9a6700; font-weight:700; } .review-card { padding:14px 0; border-bottom:1px solid #edf0f5; } .review-card strong { color:#e5a000; } .review-card p { margin:8px 0; } .review-card small { color:#788294; }
+.review-form { display:grid; gap:10px; margin-top:20px; max-width:560px; } .review-form select, .review-form textarea { padding:11px; border:1px solid #d7deea; border-radius:8px; font:inherit; } .review-form textarea { min-height:90px; resize:vertical; } .review-form button { border:0; border-radius:8px; padding:12px; background:#263f8f; color:#fff; font-weight:600; cursor:pointer; }
+.events-filters { display:flex; gap:10px; flex-wrap:wrap; align-items:center; } .events-filters input, .events-filters select { min-width:140px; max-width:100%; } .date-filter { display:flex; gap:6px; align-items:center; color:#5b6575; font-size:.9rem; }
+@media (max-width: 640px) { .payment-page { padding:24px 12px; } .payment-card { padding:20px; } .reviews-section { padding:18px; } .events-filters { flex-direction:column; align-items:stretch; } .events-filters input, .events-filters select { width:100%; } }
+
+
+/* Phase 4 UI */
+.home-event-section { padding: 28px 5%; }
+.home-event-section h2 { margin-bottom: 18px; }
+.chat-widget { position: fixed; right: 22px; bottom: 22px; z-index: 1000; font-family: inherit; }
+.chat-launcher { border: 0; border-radius: 24px; padding: 13px 18px; background: #24235b; color: white; box-shadow: 0 4px 18px #0003; cursor: pointer; }
+.chat-panel { width: min(360px, calc(100vw - 32px)); height: 440px; background: white; border: 1px solid #ddd; border-radius: 14px; box-shadow: 0 8px 32px #0003; margin-bottom: 10px; display: flex; flex-direction: column; overflow: hidden; }
+.chat-panel header { background: #24235b; color: white; padding: 12px; display: flex; justify-content: space-between; align-items: center; }
+.chat-panel header button { color: white; background: transparent; border: 0; font-size: 24px; }
+.chat-messages { padding: 12px; flex: 1; overflow-y: auto; }
+.chat-message { white-space: pre-line; padding: 9px 11px; border-radius: 10px; max-width: 90%; font-size: 14px; }
+.chat-message.bot { background: #f0f0f8; }
+.chat-message.user { background: #e3f5e8; margin-left: auto; }
+.chat-suggestions { display: flex; flex-wrap: wrap; gap: 5px; padding: 0 10px 8px; }
+.chat-suggestions button { font-size: 11px; padding: 5px 7px; }
+.chat-panel form { display: flex; gap: 5px; padding: 10px; border-top: 1px solid #eee; }
+.chat-panel form input { min-width: 0; flex: 1; }
+.profile-form { max-width: 540px; display: grid; gap: 14px; margin: 20px 0; }
+.profile-form label { display: grid; gap: 6px; }
+.profile-form input { padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+.profile-summary { background: #f7f7fb; padding: 18px; border-radius: 10px; max-width: 540px; }
+.event-update { padding: 12px; margin: 10px 0; border-radius: 8px; background: #f5f5fa; display: grid; gap: 6px; }
+.event-update.important { background: #fff1d6; border-left: 4px solid #d48b00; }
+.event-update small { color: #666; }
+@media (max-width: 700px) { .chat-widget { right: 10px; bottom: 10px; } .chat-panel { height: 60vh; } }

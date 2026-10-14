@@ -52,6 +52,15 @@ function Notifications() {
     fetchNotifications();
   }, []);
 
+  const markAllAsRead = async () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+    try {
+      await axios.patch("http://127.0.0.1:8000/api/v1/notifications/read-all", {}, { headers: { Authorization: `Bearer ${token}` } });
+      setNotifications(previous => previous.map(item => ({ ...item, is_read: true })));
+    } catch (err) { setError("Unable to mark notifications as read."); }
+  };
+
   const markAsRead = async (notificationId) => {
     const token = localStorage.getItem("access_token");
 
@@ -105,10 +114,8 @@ function Notifications() {
       <section className="notifications-header">
         <h2>Notifications</h2>
 
-        <p>
-          Stay updated with your SmartEvent bookings
-          and event activities.
-        </p>
+        <p>Stay updated with your SmartEvent bookings and event activities.</p>
+        {notifications.some(item => !item.is_read) && <button className="notification-read-button" onClick={markAllAsRead}>Mark all as read</button>}
       </section>
 
       {error && (
@@ -147,11 +154,7 @@ function Notifications() {
             >
 
               <div className="notification-icon">
-                {notification.type === "BOOKING"
-                  ? "🎟️"
-                  : notification.type === "EVENT"
-                  ? "📅"
-                  : "🔔"}
+                {notification.type === "BOOKING" ? "🎟️" : notification.type === "EVENT" ? "📅" : notification.type === "PAYMENT" ? "💳" : "🔔"}
               </div>
 
               <div className="notification-content">

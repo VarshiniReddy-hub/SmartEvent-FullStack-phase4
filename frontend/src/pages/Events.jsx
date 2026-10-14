@@ -8,6 +8,12 @@ function Events() {
   const [events, setEvents] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [sortBy, setSortBy] = useState("date");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -23,6 +29,12 @@ function Events() {
           params: {
             search: search || undefined,
             category: category || undefined,
+            location: locationFilter || undefined,
+            start_date: startDate ? `${startDate}T00:00:00` : undefined,
+            end_date: endDate ? `${endDate}T23:59:59` : undefined,
+            sort_by: sortBy,
+            min_price: minPrice === "" ? undefined : Number(minPrice),
+            max_price: maxPrice === "" ? undefined : Number(maxPrice),
           },
         }
       );
@@ -44,7 +56,7 @@ function Events() {
 
   useEffect(() => {
     fetchEvents();
-  }, [search, category]);
+  }, [search, category, locationFilter, startDate, endDate, sortBy, minPrice, maxPrice]);
 
   return (
     <main className="events-page">
@@ -99,6 +111,12 @@ function Events() {
             </option>
 
           </select>
+          <input type="text" placeholder="Filter by location" value={locationFilter} onChange={event => setLocationFilter(event.target.value)} />
+          <label className="date-filter">From <input type="date" value={startDate} onChange={event => setStartDate(event.target.value)} /></label>
+          <label className="date-filter">To <input type="date" value={endDate} onChange={event => setEndDate(event.target.value)} /></label>
+          <label className="date-filter">Min ₹<input type="number" min="0" value={minPrice} onChange={event => setMinPrice(event.target.value)} placeholder="0" /></label>
+          <label className="date-filter">Max ₹<input type="number" min="0" value={maxPrice} onChange={event => setMaxPrice(event.target.value)} placeholder="Any" /></label>
+          <select value={sortBy} onChange={event => setSortBy(event.target.value)} aria-label="Sort events"><option value="date">Sort: Date</option><option value="price">Sort: Price</option><option value="popularity">Sort: Popularity</option></select>
 
         </div>
 

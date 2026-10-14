@@ -9,6 +9,7 @@ function Booking() {
 
   const [event, setEvent] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [couponCode, setCouponCode] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [bookingLoading, setBookingLoading] = useState(false);
@@ -61,6 +62,7 @@ function Booking() {
         {
           event_id: event.id,
           ticket_quantity: quantity,
+          coupon_code: couponCode.trim() || null,
         },
         {
           headers: {
@@ -74,10 +76,8 @@ function Booking() {
         response.data
       );
 
-      navigate("/booking-confirmation", {
-        state: {
-          booking: response.data,
-        },
+      navigate("/payment-checkout", {
+        state: { booking: response.data, event },
       });
     } catch (error) {
       console.error("Booking error:", error);
@@ -199,14 +199,20 @@ function Booking() {
 
         </div>
 
+        <div className="quantity-section coupon-section">
+          <label htmlFor="couponCode">Coupon code (optional)</label>
+          <input id="couponCode" value={couponCode} onChange={(event) => setCouponCode(event.target.value.toUpperCase())} placeholder="Enter coupon code" />
+          <small>Any coupon will be validated securely when you create the booking.</small>
+        </div>
+
         <div className="booking-total">
 
           <span>
-            Total Price
+            Booking Subtotal
           </span>
 
           <strong>
-            ₹{totalPrice}
+            ₹{totalPrice.toFixed(2)}
           </strong>
 
         </div>

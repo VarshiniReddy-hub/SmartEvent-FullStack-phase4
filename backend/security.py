@@ -1,51 +1,84 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.orm import Session
+from datetime import datetime, timedelta, timezone
+
+import bcrypt
 import jwt
+from fastapi import HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from database import SessionLocal
-import models
-
-
-# =========================
-# JWT CONFIGURATION
-# =========================
-
-SECRET_KEY = "smartevent-secret-key-change-this-to-a-long-random-key"
-ALGORITHM = "HS256"
+from config import (
+    SECRET_KEY,
+    ALGORITHM,
+    ACCESS_TOKEN_EXPIRE_MINUTES
+)
 
 
 # =========================
-# SECURITY
+# PASSWORD HASHING
 # =========================
 
-security = HTTPBearer()
+def hash_password(password: str) -> str:
+    password_bytes = password.encode("utf-8")
 
-# Keep this name because other routers use it
-bearer_scheme = security
+    hashed_password = bcrypt.hashpw(
+        password_bytes,
+        bcrypt.gensalt()
+    )
 
-
-# =========================
-# DATABASE
-# =========================
-
-def get_db():
-    db = SessionLocal()
-
-    try:
-        yield db
-    finally:
-        db.close()
+    return hashed_password.decode("utf-8")
 
 
 # =========================
-# GET CURRENT USER
+# PASSWORD VERIFICATION
 # =========================
 
-def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-    db: Session = Depends(get_db)
-):
+def verify_password(
+    plain_password: str,
+    hashed_password: str
+) -> bool:
+
+    return bcrypt.checkpw(
+        plain_password.encode("utf-8"),
+        hashed_password.encode("utf-8")
+    )
+
+
+# =========================
+# CREATE JWT TOKEN
+# =========================
+
+def create_access_token(user_id: int) -> str:
+
+    expire = datetime.now(timezone.utc) + timedelta(
+        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+    )
+
+    payload = {
+        "user_id": user_id,
+        "exp": expire
+    }
+
+    return jwt.encode(
+        payload,
+        SECRET_KEY,
+        algorithm=ALGORITHM
+    )
+
+
+# =========================
+# JWT SECURITY
+# =========================
+
+bearer_scheme = HTTPBearer()
+
+
+# =========================
+# GET CURRENT USER ID
+# =========================
+
+def get_current_user_id(
+    credentials: HTTPAuthorizationCredentials
+) -> int:
+
     token = credentials.credentials
 
     try:
@@ -63,6 +96,8 @@ def get_current_user(
                 detail="Invalid token"
             )
 
+        return int(user_id)
+
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -74,53 +109,3 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"
         )
-
-    user = (
-        db.query(models.User)
-        .filter(models.User.id == user_id)
-        .first()
-    )
-
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found"
-        )
-
-    return user
-
-
-# =========================
-# GET CURRENT USER ID
-# =========================
-
-def get_current_user_id(
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-    db: Session = Depends(get_db)
-):
-    user = get_current_user(
-        credentials=credentials,
-        db=db
-    )
-
-    return user.id
-
-
-# =========================
-# ROLE CHECK
-# =========================
-
-def require_role(*allowed_roles):
-
-    def role_checker(
-        current_user: models.User = Depends(get_current_user)
-    ):
-        if current_user.role not in allowed_roles:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You do not have permission to access this resource"
-            )
-
-        return current_user
-
-    return role_checker

@@ -30,6 +30,8 @@ function Navbar({
         <NavLink to="/tickets">
           My Tickets
         </NavLink>
+        <NavLink to="/wishlist">Wishlist</NavLink>
+        <NavLink to="/profile">Profile</NavLink>
 
         <NavLink to="/ticket-verification">
           Verify Ticket
